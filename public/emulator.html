@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Emulator</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+      /* EmulatorJS's own stylesheet loads dynamically after this and sets
+         a 3px radius with a more specific selector, so !important is needed
+         to round the purple hover/active highlight on the control bar
+         buttons. */
+      .ejs_menu_button {
+        border-radius: 10px !important;
+      }
+      /* EmulatorJS's own download/decompress step is just a plain gray text
+         node (.ejs_loading_text) with no visual bar. Hide it and drive our
+         own styled overlay from its text instead (see script below). */
+      .ejs_loading_text {
+        opacity: 0 !important;
+      }
+      #ejs-progress-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 20% 0%, #1a1a24 0%, #0b0b0f 55%);
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #f1f1f4;
+      }
+      #ejs-progress-overlay.ejs-progress-overlay--hidden {
+        display: none;
+      }
+      .ejs-progress-card {
+        width: min(420px, 80vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.1rem;
+      }
+      .ejs-progress-label {
+        font-size: 0.95rem;
+        color: #b4b4c0;
+        text-align: center;
+      }
+      .ejs-progress-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #1c1c24;
+        border: 1px solid #333340;
+        overflow: hidden;
+      }
+      .ejs-progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #7c3aed, #db2777);
+        transition: width 0.2s ease;
+      }
+      .ejs-progress-fill--indeterminate {
+        width: 40% !important;
+        animation: ejs-progress-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes ejs-progress-slide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(350%); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="ejs-progress-overlay" class="ejs-progress-overlay--hidden">
+      <div class="ejs-progress-card">
+        <p class="ejs-progress-label" id="ejs-progress-label">Loading...</p>
+        <div class="ejs-progress-track">
+          <div class="ejs-progress-fill" id="ejs-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // This page is loaded inside an <iframe> by the React app and is kept
+      // isolated on purpose: EmulatorJS's loader.js sets globals (window.EJS_*)
+      // and injects its UI straight into the DOM, which is incompatible with
+      // React managing this same document. A fresh iframe per ROM keeps every
+      // load state clean, no manual teardown of EmulatorJS internals needed.
+      window.addEventListener("message", function (event) {
+        if (event.origin !== window.location.origin) return;
+        var data = event.data;
+        if (!data || data.type !== "ejs-boot") return;
+
+        window.EJS_player = "#game";
+        window.EJS_core = data.core;
+        window.EJS_pathtodata = "/data/";
+        window.EJS_gameUrl = data.file;
+        window.EJS_gameName = data.fileName;
+        window.EJS_startOnLoaded = true;
+        window.EJS_color = "#7c3aed";
+
+        var overlay = document.getElementById("ejs-progress-overlay");
+        var label = document.getElementById("ejs-progress-label");
+        var fill = document.getElementById("ejs-progress-fill");
+        overlay.classList.remove("ejs-progress-overlay--hidden");
+
+        // EmulatorJS's download/decompress progress only exists as plain
+        // text on .ejs_loading_text (e.g. "Download Game Core 45%"), no
+        // dedicated progress element. Watch it and drive our own bar instead.
+        var progressObserver = new MutationObserver(function () {
+          var textElem = document.querySelector("#game .ejs_loading_text");
+          if (!textElem) return;
+          var text = textElem.innerText || "";
+          var match = text.match(/(\d+(?:\.\d+)?)%\s*$/);
+          if (match) {
+            fill.classList.remove("ejs-progress-fill--indeterminate");
+            fill.style.width = match[1] + "%";
+            label.innerText = text.slice(0, match.index).trim();
+          } else {
+            fill.classList.add("ejs-progress-fill--indeterminate");
+            label.innerText = text;
+          }
+        });
+        progressObserver.observe(document.getElementById("game"), {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+
+        // This build's loader.js never reads window.EJS_onExit (that hook
+        // only exists in EmulatorJS's newer, ESM-based loader.js). Instead,
+        // it exposes the emulator instance as window.EJS_emulator once
+        // ready, so poll for it and attach listeners directly.
+        var exitWireInterval = setInterval(function () {
+          if (!window.EJS_emulator || typeof window.EJS_emulator.on !== "function") return;
+          clearInterval(exitWireInterval);
+          window.EJS_emulator.on("exit", function () {
+            window.parent.postMessage({ type: "ejs-exit" }, window.location.origin);
+          });
+          window.EJS_emulator.on("start", function () {
+            progressObserver.disconnect();
+            overlay.classList.add("ejs-progress-overlay--hidden");
+          });
+        }, 100);
+        if (data.couchMode) {
+          // EmulatorJS auto-detects a physical gamepad via the standard
+          // Gamepad API on its own (data/src/gamepad.js) — nothing extra
+          // needed there. The only thing worth doing for a couch/controller
+          // session is hiding the on-screen touch gamepad overlay, which is
+          // just noise when a real controller is already driving input.
+          window.EJS_defaultOptions = { "virtual-gamepad": "disabled" };
+        }
+
+        var script = document.createElement("script");
+        script.src = "/data/loader.js";
+        document.body.appendChild(script);
+      });
+    </script>
+  </body>
+</html>

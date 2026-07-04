@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+
+# Vendored via `pnpm run vendor:emulatorjs` (scripts/vendor-emulatorjs.mjs) —
+# regenerate instead of committing ~340MB of RetroArch core binaries.
+public/data

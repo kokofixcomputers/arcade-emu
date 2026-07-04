@@ -1,0 +1,27 @@
+{
+  "name": "arcade-emu",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "vendor:emulatorjs": "node scripts/vendor-emulatorjs.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@emulatorjs/cores": "^4.2.3",
+    "@node-minify/clean-css": "^10.5.0",
+    "@node-minify/core": "^10.5.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "terser": "^5.48.0",
+    "typescript": "~5.6.3",
+    "vite": "^5.4.10"
+  }
+}
