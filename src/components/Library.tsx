@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import DropZone from './DropZone'
+import RomsFolderControl from './RomsFolderControl'
 import { deleteRom, listRoms, romToFile, type RomRecord } from '../db'
 import { systemBadge, systemLabel } from '../emulatorCores'
 
@@ -19,12 +20,16 @@ export default function Library({ onPlay }: LibraryProps) {
   const [roms, setRoms] = useState<RomRecord[]>([])
   const [loaded, setLoaded] = useState(false)
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     listRoms().then((records) => {
       setRoms(records)
       setLoaded(true)
     })
   }, [])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   const handleAdd = (file: File, core: string) => {
     onPlay(file, core, '')
@@ -43,6 +48,7 @@ export default function Library({ onPlay }: LibraryProps) {
   return (
     <div className="library">
       <section className="library__hero">
+        <RomsFolderControl onImported={refresh} />
         <DropZone onLoadRom={handleAdd} />
       </section>
 

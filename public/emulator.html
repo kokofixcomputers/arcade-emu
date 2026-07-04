@@ -111,6 +111,13 @@
         window.EJS_pathtodata = "data/";
         window.EJS_gameUrl = data.file;
         window.EJS_gameName = data.fileName;
+        // Without this, EmulatorJS derives its settings-storage key from
+        // gameName/gameUrl with several fallback branches (and warns that
+        // omitting it "may result in settings persisting across games").
+        // Using our own stable library-entry id removes that ambiguity, so
+        // remapped controls/cheats/settings for a given ROM survive exiting
+        // and relaunching it (including across a full page refresh).
+        window.EJS_gameID = data.gameId;
         window.EJS_startOnLoaded = true;
         window.EJS_color = "#7c3aed";
 

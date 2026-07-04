@@ -6,6 +6,9 @@ export interface RomRecord {
   addedAt: number
   lastPlayedAt: number
   blob: Blob
+  /** Absolute filesystem path, only set for ROMs auto-imported from a
+   *  desktop (Tauri) ROMs folder — used to skip re-importing on rescan. */
+  sourcePath?: string
 }
 
 const DB_NAME = 'arcade-emu'
@@ -40,7 +43,7 @@ async function withStore<T>(
   })
 }
 
-export async function addRom(file: File, core: string): Promise<RomRecord> {
+export async function addRom(file: File, core: string, sourcePath?: string): Promise<RomRecord> {
   const record: RomRecord = {
     id: crypto.randomUUID(),
     name: file.name,
@@ -49,9 +52,15 @@ export async function addRom(file: File, core: string): Promise<RomRecord> {
     addedAt: Date.now(),
     lastPlayedAt: Date.now(),
     blob: file,
+    sourcePath,
   }
   await withStore('readwrite', (store) => store.put(record))
   return record
+}
+
+export async function listSourcePaths(): Promise<Set<string>> {
+  const records = await withStore<RomRecord[]>('readonly', (store) => store.getAll())
+  return new Set(records.map((r) => r.sourcePath).filter((p): p is string => !!p))
 }
 
 export async function listRoms(): Promise<RomRecord[]> {

@@ -10,6 +10,7 @@ type View = 'library' | 'couch'
 interface ActiveRom {
   file: File
   core: string
+  romId: string
   key: string
   launchedFrom: View
 }
@@ -19,14 +20,16 @@ function App() {
   const [activeRom, setActiveRom] = useState<ActiveRom | null>(null)
 
   const handlePlay = async (file: File, core: string, existingRomId: string) => {
+    let romId = existingRomId
     if (existingRomId) {
       await touchRom(existingRomId)
     } else {
-      await addRom(file, core)
+      romId = (await addRom(file, core)).id
     }
     setActiveRom({
       file,
       core,
+      romId,
       key: `${file.name}-${file.size}-${file.lastModified}-${Date.now()}`,
       launchedFrom: view,
     })
@@ -86,6 +89,7 @@ function App() {
               key={activeRom.key}
               file={activeRom.file}
               core={activeRom.core}
+              romId={activeRom.romId}
               couchMode={activeRom.launchedFrom === 'couch'}
             />
           </div>

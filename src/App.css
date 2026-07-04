@@ -90,7 +90,52 @@
 
 .library__hero {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.roms-folder {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
   justify-content: center;
+}
+
+.roms-folder__button {
+  background: #1c1c24;
+  color: #f1f1f4;
+  border: 1px solid #333340;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.roms-folder__button:hover {
+  background: #26262f;
+  border-color: #444;
+}
+
+.roms-folder__button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.roms-folder__button--secondary {
+  background: transparent;
+}
+
+.roms-folder__path {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #8a8a97;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .library__grid-section h2 {
