@@ -4,12 +4,28 @@
     <meta charset="UTF-8" />
     <title>Emulator</title>
     <style>
+      /* Mirrors the design tokens in src/index.css so this static page
+         (not processed by Vite, can't import the app's CSS vars) stays in
+         sync with the rest of the app's dark amber/CRT theme. */
+      :root {
+        --ink: #0a0a0c;
+        --ink-raised: #131316;
+        --ink-card: #1a1a1e;
+        --line: #2c2c32;
+        --paper: #f4efe6;
+        --paper-dim: #a8a29a;
+        --amber: #ffb238;
+        --amber-dim: #c98f2c;
+        --r-sm: 6px;
+        --r-md: 12px;
+        --font-body: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      }
       html, body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
-        background: #000;
+        background: var(--ink);
         overflow: hidden;
       }
       #game {
@@ -18,10 +34,9 @@
       }
       /* EmulatorJS's own stylesheet loads dynamically after this and sets
          a 3px radius with a more specific selector, so !important is needed
-         to round the purple hover/active highlight on the control bar
-         buttons. */
+         to round the hover/active highlight on the control bar buttons. */
       .ejs_menu_button {
-        border-radius: 10px !important;
+        border-radius: var(--r-sm) !important;
       }
       /* EmulatorJS's own download/decompress step is just a plain gray text
          node (.ejs_loading_text) with no visual bar. Hide it and drive our
@@ -36,9 +51,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(circle at 20% 0%, #1a1a24 0%, #0b0b0f 55%);
-        font-family: system-ui, -apple-system, sans-serif;
-        color: #f1f1f4;
+        background: var(--ink);
+        font-family: var(--font-body);
+        color: var(--paper);
       }
       #ejs-progress-overlay.ejs-progress-overlay--hidden {
         display: none;
@@ -49,25 +64,30 @@
         flex-direction: column;
         align-items: center;
         gap: 1.1rem;
+        padding: 2rem 2.25rem;
+        background: var(--ink-raised);
+        border: 1.5px solid var(--line);
+        border-radius: var(--r-md);
       }
       .ejs-progress-label {
-        font-size: 0.95rem;
-        color: #b4b4c0;
+        font-size: 0.82rem;
+        color: var(--paper-dim);
         text-align: center;
+        letter-spacing: 0.02em;
       }
       .ejs-progress-track {
         width: 100%;
-        height: 10px;
+        height: 8px;
         border-radius: 999px;
-        background: #1c1c24;
-        border: 1px solid #333340;
+        background: var(--ink-card);
+        border: 1px solid var(--line);
         overflow: hidden;
       }
       .ejs-progress-fill {
         height: 100%;
         width: 0%;
         border-radius: 999px;
-        background: linear-gradient(135deg, #7c3aed, #db2777);
+        background: var(--amber);
         transition: width 0.2s ease;
       }
       .ejs-progress-fill--indeterminate {
@@ -119,7 +139,7 @@
         // and relaunching it (including across a full page refresh).
         window.EJS_gameID = data.gameId;
         window.EJS_startOnLoaded = true;
-        window.EJS_color = "#7c3aed";
+        window.EJS_color = "#ffb238";
 
         var overlay = document.getElementById("ejs-progress-overlay");
         var label = document.getElementById("ejs-progress-label");

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 import DropZone from './DropZone'
 import RomsFolderControl from './RomsFolderControl'
 import { deleteRom, listRoms, romToFile, type RomRecord } from '../db'
@@ -66,7 +67,7 @@ export default function Library({ onPlay }: LibraryProps) {
                 >
                   <div
                     className="rom-card__art"
-                    style={{ background: `linear-gradient(135deg, ${badge.color}, #0f0f14)` }}
+                    style={{ background: `linear-gradient(135deg, ${badge.color}, #0a0a0c)` }}
                   >
                     <span className="rom-card__badge">{badge.short}</span>
                   </div>
@@ -82,7 +83,7 @@ export default function Library({ onPlay }: LibraryProps) {
                     onClick={(event) => handleDelete(event, record.id)}
                     aria-label={`Remove ${record.name}`}
                   >
-                    ✕
+                    <X size={14} />
                   </button>
                 </div>
               )

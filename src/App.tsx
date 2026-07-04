@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ArrowLeft, Gamepad2 } from 'lucide-react'
 import Library from './components/Library'
 import CouchMode from './components/CouchMode'
 import EmulatorFrame from './components/EmulatorFrame'
@@ -67,14 +68,15 @@ function App() {
         <header className="app__header">
           <h1 className="app__logo">
             <span className="app__logo-accent">Arcade</span>Emu
+            <span className="app__logo-cursor" aria-hidden="true" />
           </h1>
           {activeRom ? (
             <button className="app__reset" onClick={() => setActiveRom(null)}>
-              ← Back to library
+              <ArrowLeft size={16} /> Back to library
             </button>
           ) : (
             <button className="app__couch-button" onClick={enterCouchMode}>
-              🎮 Couch Mode
+              <Gamepad2 size={16} /> Couch Mode
             </button>
           )}
         </header>

@@ -81,7 +81,7 @@ export default function CouchMode({ onPlay, onExit }: CouchModeProps) {
               >
                 <div
                   className="couch-card__art"
-                  style={{ background: `linear-gradient(135deg, ${badge.color}, #0f0f14)` }}
+                  style={{ background: `linear-gradient(135deg, ${badge.color}, #0a0a0c)` }}
                 >
                   <span className="couch-card__badge">{badge.short}</span>
                 </div>

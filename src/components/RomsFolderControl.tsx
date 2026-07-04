@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { FolderOpen, RefreshCw } from 'lucide-react'
 import { addRom, listSourcePaths } from '../db'
 import { isTauri, pickRomsFolder, readRomFile, scanRomsFolder } from '../tauriRoms'
 
@@ -51,7 +52,7 @@ export default function RomsFolderControl({ onImported }: RomsFolderControlProps
   return (
     <div className="roms-folder">
       <button className="roms-folder__button" onClick={handleChooseFolder} disabled={scanning}>
-        📁 {folder ? 'Change ROMs Folder' : 'Set ROMs Folder'}
+        <FolderOpen size={16} /> {folder ? 'Change ROMs Folder' : 'Set ROMs Folder'}
       </button>
       {folder && (
         <button
@@ -59,6 +60,7 @@ export default function RomsFolderControl({ onImported }: RomsFolderControlProps
           onClick={() => importFromFolder(folder)}
           disabled={scanning}
         >
+          <RefreshCw size={16} className={scanning ? 'roms-folder__spin' : ''} />
           {scanning ? 'Scanning…' : 'Rescan'}
         </button>
       )}

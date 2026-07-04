@@ -1,3 +1,27 @@
+:root {
+  /* Palette — dark cabinet shell with a single warm phosphor accent instead
+     of a purple/pink gradient. Restrained on hue count, sharp on contrast. */
+  --ink: #0a0a0c;
+  --ink-raised: #131316;
+  --ink-card: #1a1a1e;
+  --line: #2c2c32;
+  --line-soft: #201f24;
+  --paper: #f4efe6;
+  --paper-dim: #a8a29a;
+  --amber: #ffb238;
+  --amber-dim: #c98f2c;
+  --amber-ink: #1c1200;
+  --danger: #e5484d;
+
+  /* Consistent radius scale, used everywhere instead of ad hoc values. */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 18px;
+
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
+  --font-body: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -9,6 +33,25 @@ html, body, #root {
 }
 
 body {
-  background: #121212;
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  position: relative;
+}
+
+/* Faint scanline texture for atmosphere, cheap and CSS-only. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
 }
