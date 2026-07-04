@@ -103,7 +103,12 @@
 
         window.EJS_player = "#game";
         window.EJS_core = data.core;
-        window.EJS_pathtodata = "/data/";
+        // Relative, not root-absolute: this file isn't processed by Vite's
+        // base-path rewriting (it's a static /public asset copied as-is), so
+        // an absolute "/data/" would 404 on GitHub Pages project sites
+        // served from /<repo-name>/ instead of the domain root. Relative
+        // paths resolve against this document's own URL either way.
+        window.EJS_pathtodata = "data/";
         window.EJS_gameUrl = data.file;
         window.EJS_gameName = data.fileName;
         window.EJS_startOnLoaded = true;
@@ -162,7 +167,7 @@
         }
 
         var script = document.createElement("script");
-        script.src = "/data/loader.js";
+        script.src = "data/loader.js";
         document.body.appendChild(script);
       });
     </script>

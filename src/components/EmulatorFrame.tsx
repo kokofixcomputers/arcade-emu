@@ -22,7 +22,7 @@ export default function EmulatorFrame({ file, core, couchMode }: EmulatorFramePr
     <iframe
       ref={iframeRef}
       title="emulator"
-      src="/emulator.html"
+      src={`${import.meta.env.BASE_URL}emulator.html`}
       onLoad={handleLoad}
       allow="gamepad; fullscreen"
       className="emulator-frame"
