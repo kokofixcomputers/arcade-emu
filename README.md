@@ -226,6 +226,14 @@ https://github.com/kokofixcomputers/arcade-emu/releases
 
 Select the asset that matches your platform (macOS, Windows, Linux). Prebuilt releases normally include the vendored EmulatorJS runtime and cores, so you do not need to run the vendoring script locally when using a release build.
 
+Project site / web demo
+
+The project also hosts a web demo and additional release info on GitHub Pages:
+
+https://kokofixcomputers.github.io/arcade-emu
+
+Note: the GitHub Pages site hosts the browser build (web demo). For native desktop installers and packaged releases, use the Releases page linked above.
+
 Build from source
 
 Requires the [Rust toolchain](https://www.rust-lang.org/tools/install) in addition to the web setup above.
