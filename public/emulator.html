@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <title>Emulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       /* Mirrors the design tokens in src/index.css so this static page
          (not processed by Vite, can't import the app's CSS vars) stays in
@@ -19,6 +25,7 @@
         --r-sm: 6px;
         --r-md: 12px;
         --font-body: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+        --font-display: 'Press Start 2P', 'Courier New', monospace;
       }
       html, body {
         margin: 0;
@@ -98,6 +105,136 @@
         0% { transform: translateX(-100%); }
         100% { transform: translateX(350%); }
       }
+
+      /* EmulatorJS's popups (Control Settings, Cheats, Netplay, confirm
+         dialogs, etc.) all share these classes — restyled once here to
+         match the rest of the app instead of the library's default light
+         panels and stark white key-capture inputs. */
+      .ejs_popup_container {
+        background: rgba(10, 10, 12, 0.88) !important;
+      }
+      .ejs_popup_container *,
+      .ejs_popup_container *::before,
+      .ejs_popup_container *::after {
+        color: var(--paper) !important;
+        font-family: var(--font-body) !important;
+      }
+      .ejs_popup_container h4 {
+        font-family: var(--font-display) !important;
+        font-size: 0.85rem !important;
+        font-weight: 400;
+        color: var(--amber) !important;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        padding: 1.4rem 3rem 1rem !important;
+      }
+      .ejs_popup_box {
+        background: var(--ink-raised) !important;
+        border: 1.5px solid var(--line);
+        border-radius: var(--r-md);
+      }
+      .ejs_popup_container_box {
+        background: rgba(10, 10, 12, 0.75) !important;
+      }
+      .ejs_button,
+      .ejs_button_button {
+        background: transparent !important;
+        border: 1.5px solid var(--line) !important;
+        border-radius: var(--r-sm) !important;
+        font-weight: 600;
+        transition: border-color 0.15s ease, color 0.15s ease;
+      }
+      .ejs_button:hover,
+      .ejs_button_button:hover {
+        border-color: var(--amber-dim) !important;
+        color: var(--amber) !important;
+      }
+      /* Control Settings key-capture fields: EmulatorJS hardcodes these as
+         plain white <input type="text">s, which is the "browser field"
+         look this overrides. */
+      .ejs_control_body input[type='text'] {
+        background-color: var(--ink-card) !important;
+        border: 1.5px solid var(--line) !important;
+        border-radius: var(--r-sm) !important;
+        color: var(--paper) !important;
+        /* WebKit (Tauri's macOS webview) renders readonly/disabled form
+           control text via -webkit-text-fill-color, ignoring plain `color`
+           and falling back to a near-black default regardless of theme. */
+        -webkit-text-fill-color: var(--paper) !important;
+        opacity: 1 !important;
+        font-weight: 600;
+        text-align: center;
+      }
+      /* The gamepad-device picker is a native <select> — same WebKit/appearance
+         issue applies, plus browsers often ignore author styling on the open
+         option list unless the native chrome is stripped first. */
+      .ejs_popup_container select {
+        background-color: var(--ink-card) !important;
+        color: var(--paper) !important;
+        -webkit-text-fill-color: var(--paper) !important;
+        border: 1.5px solid var(--line) !important;
+        border-radius: var(--r-sm) !important;
+        -webkit-appearance: none;
+        appearance: none;
+        padding: 0.25rem 0.5rem;
+      }
+      .ejs_popup_container select option {
+        background-color: var(--ink-card) !important;
+        color: var(--paper) !important;
+      }
+      .ejs_control_player_bar a {
+        color: var(--paper-dim) !important;
+      }
+      .ejs_control_player_bar li:hover:not(.ejs_control_selected) {
+        background-color: var(--ink-card) !important;
+        border-bottom-color: var(--ink-card) !important;
+      }
+      .ejs_control_selected {
+        background-color: var(--amber) !important;
+        border-bottom-color: var(--amber) !important;
+      }
+      .ejs_control_selected a {
+        color: var(--amber-ink) !important;
+      }
+      .ejs_control_bar:hover {
+        background-color: var(--ink-card) !important;
+      }
+      .ejs_control_set_button {
+        background-color: var(--amber) !important;
+        color: var(--amber-ink) !important;
+        border-radius: var(--r-sm) !important;
+      }
+      /* Custom circular X close button, tagged onto each popup's "Close"
+         link by the script below (EmulatorJS itself only renders it as a
+         plain text link in the button row, no corner close affordance). */
+      .ejs-popup-close {
+        position: absolute !important;
+        top: 14px !important;
+        right: 14px !important;
+        margin: 0 !important;
+        width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        background: var(--ink-card) !important;
+        border: 1.5px solid var(--line) !important;
+        font-size: 0 !important;
+      }
+      .ejs-popup-close::before {
+        content: '\2715';
+        font-size: 13px;
+        font-family: var(--font-body);
+        line-height: 1;
+      }
+      .ejs-popup-close:hover {
+        border-color: #e5484d !important;
+      }
+      .ejs-popup-close:hover::before {
+        color: #e5484d !important;
+      }
     </style>
   </head>
   <body>
@@ -168,6 +305,28 @@
           subtree: true,
           characterData: true,
         });
+
+        // EmulatorJS's popups (Control Settings, Cheats, Netplay, ...) only
+        // render "Close" as a plain text link in the button row — there's no
+        // dedicated close-icon element to style. Tag it once per popup so
+        // the .ejs-popup-close CSS above can turn it into a corner X button.
+        var popupObserver = new MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            mutation.addedNodes.forEach(function (node) {
+              if (!(node instanceof HTMLElement)) return;
+              var popups = node.classList && node.classList.contains("ejs_popup_container")
+                ? [node]
+                : Array.from(node.querySelectorAll ? node.querySelectorAll(".ejs_popup_container") : []);
+              popups.forEach(function (popup) {
+                var closeBtn = Array.from(popup.querySelectorAll("a.ejs_button")).find(function (a) {
+                  return a.textContent.trim().toLowerCase() === "close";
+                });
+                if (closeBtn) closeBtn.classList.add("ejs-popup-close");
+              });
+            });
+          });
+        });
+        popupObserver.observe(document.getElementById("game"), { childList: true, subtree: true });
 
         // This build's loader.js never reads window.EJS_onExit (that hook
         // only exists in EmulatorJS's newer, ESM-based loader.js). Instead,
