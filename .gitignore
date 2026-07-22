@@ -7,3 +7,6 @@ dist-ssr
 # Vendored via `pnpm run vendor:emulatorjs` (scripts/vendor-emulatorjs.mjs) —
 # regenerate instead of committing ~340MB of RetroArch core binaries.
 public/data
+
+# Serena IDE
+.serena/project.yml
