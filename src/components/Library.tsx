@@ -78,7 +78,7 @@ export default function Library({ onPlay }: LibraryProps) {
                 <option key={core} value={core}>{systemLabel(core)}</option>
               ))}
             </select>
-            <button onClick={() => { setSearch(''); setFilterSystem('all') }} style={{marginLeft: 'auto'}}>Clear</button>
+            <button className="filter-clear" onClick={() => { setSearch(''); setFilterSystem('all') }}>Clear</button>
           </div>
 
           <div className="library__grid">

@@ -342,6 +342,23 @@
   word-break: break-all;
 }
 
+/* filter clear button */
+.filter-clear {
+  margin-left: auto;
+  background: transparent;
+  color: var(--paper);
+  border: 1.5px solid var(--line);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+.filter-clear:hover {
+  color: var(--amber);
+  border-color: var(--amber-dim);
+}
+
 .rom-controls {
   display: flex;
   align-items: center;
