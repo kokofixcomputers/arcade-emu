@@ -14,13 +14,45 @@ interface ActiveRom {
   romId: string
   key: string
   launchedFrom: View
+  bios?: File[] | null
 }
 
 function App() {
+  const DISCLAIMER_KEY = 'arcade-emu:disclaimer-accepted'
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem(DISCLAIMER_KEY)
+    } catch (e) {
+      return true
+    }
+  })
+  const [countdown, setCountdown] = useState<number>(3)
+
+  // start countdown when the disclaimer is visible
+  useEffect(() => {
+    if (!showDisclaimer) return
+    if (countdown <= 0) return
+    const id = setInterval(() => {
+      setCountdown((c) => Math.max(0, c - 1))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [showDisclaimer, countdown])
+
+  const acceptDisclaimer = () => {
+    try {
+      localStorage.setItem(DISCLAIMER_KEY, '1')
+    } catch (e) {
+      // ignore
+    }
+    setShowDisclaimer(false)
+  }
+
+  const continueAllowed = countdown <= 0
+
   const [view, setView] = useState<View>('library')
   const [activeRom, setActiveRom] = useState<ActiveRom | null>(null)
 
-  const handlePlay = async (file: File, core: string, existingRomId: string) => {
+  const handlePlay = async (file: File, core: string, existingRomId: string, bios?: File[] | null) => {
     let romId = existingRomId
     if (existingRomId) {
       await touchRom(existingRomId)
@@ -33,6 +65,7 @@ function App() {
       romId,
       key: `${file.name}-${file.size}-${file.lastModified}-${Date.now()}`,
       launchedFrom: view,
+      bios: bios ?? null,
     })
   }
 
@@ -64,6 +97,7 @@ function App() {
 
   return (
     <div className="app">
+      {/* Header */}
       {!(activeRom?.launchedFrom === 'couch') && (
         <header className="app__header">
           <h1 className="app__logo">
@@ -82,7 +116,8 @@ function App() {
         </header>
       )}
 
-      <main className={`app__main ${activeRom ? 'app__main--player' : ''}`}>
+      {/* Main content (library / couch / player) */}
+      <main className={`app__main ${activeRom ? 'app__main--player' : ''}`} aria-hidden={showDisclaimer}>
         {!activeRom && view === 'library' && <Library onPlay={handlePlay} />}
         {!activeRom && view === 'couch' && <CouchMode onPlay={handlePlay} onExit={exitCouchMode} />}
         {activeRom && (
@@ -93,10 +128,43 @@ function App() {
               core={activeRom.core}
               romId={activeRom.romId}
               couchMode={activeRom.launchedFrom === 'couch'}
+              bios={activeRom.bios ?? null}
             />
           </div>
         )}
       </main>
+
+      {/* Disclaimer modal shown on first visit only */}
+      {showDisclaimer && (
+        <div className="disclaimer-overlay" role="dialog" aria-modal="true">
+          <div className="disclaimer-card">
+            <h2 className="disclaimer-title">Important: Usage & Copyright</h2>
+            <div className="disclaimer-body">
+              <p>
+                This application does not provide, distribute, or bundle any game ROM files. ROMs must be supplied
+                locally by you (drag-and-drop or from a folder). Only load ROMs you legally own and are permitted
+                to use in your jurisdiction.
+              </p>
+              <p>
+                This project is intended for educational and demonstration purposes only. It is not intended to
+                facilitate piracy or unauthorized distribution of copyrighted software.
+              </p>
+            </div>
+
+            <div className="disclaimer-actions">
+              <div className="disclaimer-countdown">{countdown > 0 ? `Please wait ${countdown}…` : 'Ready'}</div>
+              <button
+                className="disclaimer-button"
+                onClick={acceptDisclaimer}
+                disabled={!continueAllowed}
+                aria-disabled={!continueAllowed}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -280,6 +280,30 @@
         window.EJS_pathtodata = "data/";
         window.EJS_gameUrl = data.file;
         window.EJS_gameName = data.fileName;
+        // If the parent passed BIOS files, expose them as blob URLs for the
+        // loader to fetch. data.bios may be null or an array of File objects.
+        if (data.bios && Array.isArray(data.bios)) {
+          window.EJS_bios = data.bios.map(function (f, i) {
+            try {
+              return URL.createObjectURL(f);
+            } catch (e) {
+              return null;
+            }
+          }).filter(Boolean);
+          // Map filenames to blob URLs so cores expecting specific BIOS names
+          // can look them up. Expose as window.EJS_bios_map: { filename: url }
+          window.EJS_bios_map = {};
+          data.bios.forEach(function (f, i) {
+            try {
+              if (f && f.name && window.EJS_bios[i]) {
+                window.EJS_bios_map[f.name] = window.EJS_bios[i];
+              }
+            } catch (e) {}
+          });
+        } else {
+          window.EJS_bios = null;
+          window.EJS_bios_map = {};
+        }
         // Without this, EmulatorJS derives its settings-storage key from
         // gameName/gameUrl with several fallback branches (and warns that
         // omitting it "may result in settings persisting across games").

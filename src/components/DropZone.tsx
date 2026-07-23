@@ -2,12 +2,14 @@ import { useRef, useState, type DragEvent, type ChangeEvent } from 'react'
 import { SYSTEMS, guessSystem } from '../emulatorCores'
 
 interface DropZoneProps {
-  onLoadRom: (file: File, core: string) => void
+  onLoadRom: (file: File, core: string, bios?: File[] | null) => void
 }
 
 export default function DropZone({ onLoadRom }: DropZoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingBios, setPendingBios] = useState<File[] | null>(null)
+  const biosInputRef = useRef<HTMLInputElement>(null)
   const [core, setCore] = useState<string>(SYSTEMS[0].value)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -20,13 +22,25 @@ export default function DropZone({ onLoadRom }: DropZoneProps) {
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setIsDragging(false)
-    const file = event.dataTransfer.files[0]
-    if (file) acceptFile(file)
+    const files = Array.from(event.dataTransfer.files)
+    // pick first as ROM, others as BIOS candidates
+    const rom = files[0]
+    const biosFiles = files.slice(1)
+    if (rom) acceptFile(rom)
+    if (biosFiles.length) setPendingBios(biosFiles)
   }
 
   const handleFileInput = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) acceptFile(file)
+    const files = Array.from(event.target.files ?? [])
+    const rom = files[0]
+    const biosFiles = files.slice(1)
+    if (rom) acceptFile(rom)
+    if (biosFiles.length) setPendingBios(biosFiles)
+  }
+
+  const handleBiosInput = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    if (files.length) setPendingBios(files)
   }
 
   return (
@@ -48,6 +62,14 @@ export default function DropZone({ onLoadRom }: DropZoneProps) {
           type="file"
           onChange={handleFileInput}
           hidden
+          multiple
+        />
+        <input
+          ref={biosInputRef}
+          type="file"
+          onChange={handleBiosInput}
+          hidden
+          multiple
         />
       </div>
 
@@ -65,9 +87,30 @@ export default function DropZone({ onLoadRom }: DropZoneProps) {
               </option>
             ))}
           </select>
-          <div style={{display: 'flex', gap: '12px', marginTop: '8px'}}>
-            <button style={{flex: '1 0 auto'}} onClick={() => onLoadRom(pendingFile, core)}>Play</button>
-            <button style={{flex: '0 0 auto'}} onClick={() => fileInputRef.current?.click()}>Add BIOS</button>
+          {pendingBios && (
+            <div className="bios-list">
+              <label>Selected BIOS:</label>
+              <ul>
+                {pendingBios.map((b, i) => (
+                  <li key={`${b.name}-${i}`}>
+                    {b.name}{' '}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setPendingBios((current) => (current ? current.filter((_, idx) => idx !== i) : null))
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="rom-actions">
+            <button onClick={() => onLoadRom(pendingFile as File, core, pendingBios ?? null)}>Play</button>
+            <button onClick={() => biosInputRef.current?.click()}>Add BIOS</button>
           </div>
         </div>
       )}
