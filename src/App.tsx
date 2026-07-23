@@ -14,13 +14,14 @@ interface ActiveRom {
   romId: string
   key: string
   launchedFrom: View
+  bios?: File[] | null
 }
 
 function App() {
   const [view, setView] = useState<View>('library')
   const [activeRom, setActiveRom] = useState<ActiveRom | null>(null)
 
-  const handlePlay = async (file: File, core: string, existingRomId: string) => {
+  const handlePlay = async (file: File, core: string, existingRomId: string, bios?: File[] | null) => {
     let romId = existingRomId
     if (existingRomId) {
       await touchRom(existingRomId)
@@ -33,6 +34,7 @@ function App() {
       romId,
       key: `${file.name}-${file.size}-${file.lastModified}-${Date.now()}`,
       launchedFrom: view,
+      bios: bios ?? null,
     })
   }
 
@@ -93,6 +95,7 @@ function App() {
               core={activeRom.core}
               romId={activeRom.romId}
               couchMode={activeRom.launchedFrom === 'couch'}
+              bios={activeRom.bios ?? null}
             />
           </div>
         )}
