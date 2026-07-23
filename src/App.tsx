@@ -53,6 +53,24 @@ function App() {
   const [activeRom, setActiveRom] = useState<ActiveRom | null>(null)
 
   const handlePlay = async (file: File, core: string, existingRomId: string, bios?: File[] | null) => {
+    // Attempt to acquire the Keyboard Lock API during this user activation.
+    // This lets us capture physical keys (e.g. KeyW) and combinations like
+    // Ctrl+W on supporting browsers. It is experimental and may reject.
+    try {
+      const requested = [
+        'Tab','Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
+        'PageUp','PageDown','ArrowLeft','ArrowRight','ArrowUp','ArrowDown',
+        'Backspace','Delete','Home','End','Insert','Space','Enter','NumpadEnter',
+        'KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','KeyP','KeyT','KeyN','KeyR','KeyF',
+      ]
+      if (navigator.keyboard && typeof (navigator as any).keyboard.lock === 'function') {
+        // @ts-ignore
+        ;(navigator as any).keyboard.lock(requested).catch(() => {})
+      }
+    } catch (e) {
+      // ignore
+    }
+
     let romId = existingRomId
     if (existingRomId) {
       await touchRom(existingRomId)
@@ -67,10 +85,39 @@ function App() {
       launchedFrom: view,
       bios: bios ?? null,
     })
+
+    // mark emulator active for global keyboard capture hook
+    try {
+      ;(window as any).__arcadeEmuEmulatorActive = true
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  const KEYBOARD_REQUESTED = [
+    'Tab','Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
+    'PageUp','PageDown','ArrowLeft','ArrowRight','ArrowUp','ArrowDown',
+    'Backspace','Delete','Home','End','Insert',' ', 'Enter',
+    'KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','KeyP','KeyT','KeyN','KeyR','KeyF',
+  ]
+
+  async function attemptKeyboardLock() {
+    try {
+      if ((navigator as any).keyboard && typeof (navigator as any).keyboard.lock === 'function') {
+        // @ts-ignore
+        await (navigator as any).keyboard.lock(KEYBOARD_REQUESTED)
+      }
+    } catch (e) {
+      // ignore failures
+    }
   }
 
   const enterCouchMode = () => {
-    document.documentElement.requestFullscreen?.().catch(() => {})
+    // Request fullscreen; attempt to lock keyboard after fullscreen is entered
+    const p = document.documentElement.requestFullscreen?.()
+    if (p && typeof p.then === 'function') {
+      p.then(() => attemptKeyboardLock()).catch(() => {})
+    }
     setView('couch')
   }
 
@@ -79,10 +126,22 @@ function App() {
     setView('library')
   }
 
+  // Re-attempt lock when the page enters fullscreen by any means
+  useEffect(() => {
+    const onFs = () => {
+      if (document.fullscreenElement) attemptKeyboardLock()
+    }
+    document.addEventListener('fullscreenchange', onFs)
+    return () => document.removeEventListener('fullscreenchange', onFs)
+  }, [])
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return
       if (event.data?.type === 'ejs-exit') {
+        try {
+          ;(window as any).__arcadeEmuEmulatorActive = false
+        } catch (e) {}
         if (activeRom?.launchedFrom === 'couch') {
           setView('couch')
         } else if (document.fullscreenElement) {

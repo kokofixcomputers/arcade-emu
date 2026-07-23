@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 
 interface EmulatorFrameProps {
   file: File
@@ -10,6 +10,10 @@ interface EmulatorFrameProps {
 
 export default function EmulatorFrame({ file, core, romId, couchMode, bios }: EmulatorFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    // Placeholder for any post-load wiring we may need in future.
+  }, [])
 
   const handleLoad = () => {
     const contentWindow = iframeRef.current?.contentWindow
@@ -28,6 +32,9 @@ export default function EmulatorFrame({ file, core, romId, couchMode, bios }: Em
       onLoad={handleLoad}
       allow="gamepad; fullscreen"
       className="emulator-frame"
+      /* When the iframe unloads (emulator exits), clear the active flag so
+         keyboard capture stops. */
+      onUnload={() => { try { (window as any).__arcadeEmuEmulatorActive = false } catch (e) {} }}
     />
   )
 }
