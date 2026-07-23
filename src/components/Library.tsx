@@ -6,7 +6,7 @@ import { deleteRom, listRoms, romToFile, type RomRecord } from '../db'
 import { systemBadge, systemLabel } from '../emulatorCores'
 
 interface LibraryProps {
-  onPlay: (file: File, core: string, romId: string) => void
+  onPlay: (file: File, core: string, romId: string, bios?: File[] | null) => void
 }
 
 function formatDate(timestamp: number): string {
@@ -32,8 +32,8 @@ export default function Library({ onPlay }: LibraryProps) {
     refresh()
   }, [refresh])
 
-  const handleAdd = (file: File, core: string) => {
-    onPlay(file, core, '')
+  const handleAdd = (file: File, core: string, bios?: File[] | null) => {
+    onPlay(file, core, '', bios ?? null)
   }
 
   const handleResume = (record: RomRecord) => {
