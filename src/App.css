@@ -230,9 +230,8 @@
 }
 
 .rom-card__delete {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  /* positioned inside .rom-card__actions container now */
+  position: static;
   width: 24px;
   height: 24px;
   display: flex;
@@ -507,6 +506,40 @@
 .disclaimer-button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* Edit modal (full-screen) */
+.rom-edit-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 10001;
+}
+.rom-edit-card {
+  width: min(720px, 92vw);
+  background: var(--ink-raised);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 1.25rem;
+}
+.rom-edit-card h3 { margin: 0 0 0.75rem 0 }
+.rom-edit-card select {
+  background: var(--ink-card);
+  color: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0.4rem;
+}
+.rom-edit-card button {
+  background: var(--amber);
+  color: var(--amber-ink);
+  border: 1.5px solid var(--amber);
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--r-sm);
+  font-weight: 700;
 }
 
 /* Couch / big-picture mode */

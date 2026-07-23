@@ -130,7 +130,7 @@ export default function Library({ onPlay }: LibraryProps) {
                     <p className="rom-card__meta">Last played {formatDate(record.lastPlayedAt)}</p>
                   </div>
 
-                  <div className="rom-card__actions">
+                  <div className="rom-card__actions" aria-hidden={editingId === record.id}>
                     <button className="rom-card__action" onClick={(e) => startEdit(e, record)} aria-label={`Edit ${record.name}`}>
                       <Settings size={14} />
                     </button>
@@ -144,50 +144,54 @@ export default function Library({ onPlay }: LibraryProps) {
                     </button>
                   </div>
 
-                  {editingId === record.id && (
-                    <div className="rom-card__edit" onClick={(e) => e.stopPropagation()}>
-                      <div style={{display: 'flex', gap: '8px'}}>
-                        <select value={editingCore ?? record.core} onChange={(e) => setEditingCore(e.target.value)}>
-                          {SYSTEMS.map((s) => (
-                            <option key={s.value} value={s.value}>{s.label}</option>
-                          ))}
-                        </select>
-
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                          <div>
-                            <label>BIOS files</label>
-                            <div style={{display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px'}}>
-                              <input ref={biosInputRef} type="file" multiple hidden onChange={(e) => {
-                                const files = Array.from(e.target.files ?? [])
-                                setEditingBios((current) => {
-                                  const base = current ? [...current] : []
-                                  for (const f of files) base.push(f)
-                                  return base
-                                })
-                              }} />
-                              <button onClick={() => biosInputRef.current?.click()}>Add BIOS</button>
-                              <div style={{display: 'flex', gap: '6px'}}>
-                                {(editingBios ?? []).map((b, i) => (
-                                  <span key={`${b.name}-${i}`} style={{background: 'rgba(255,255,255,0.04)', padding: '4px 6px', borderRadius: 6}}>
-                                    {b.name} <button onClick={() => setEditingBios((cur) => cur ? cur.filter((_, idx) => idx !== i) : null)}>x</button>
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{display: 'flex', gap: '8px', marginTop: '8px'}}>
-                            <button onClick={saveEdit}>Save</button>
-                            <button onClick={cancelEdit}>Cancel</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )
             })}
           </div>
+
+          {/* Edit modal (full-screen) */}
+          {editingId && (
+            <div className="rom-edit-modal" role="dialog" aria-modal="true" onClick={cancelEdit}>
+              <div className="rom-edit-card" onClick={(e) => e.stopPropagation()}>
+                <h3>Edit ROM</h3>
+                <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
+                  <label style={{color: 'var(--paper-dim)'}}>System</label>
+                  <select value={editingCore ?? ''} onChange={(e) => setEditingCore(e.target.value)}>
+                    {SYSTEMS.map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{marginTop: '12px'}}>
+                  <label style={{color: 'var(--paper-dim)'}}>BIOS files</label>
+                  <div style={{display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px'}}>
+                    <input ref={biosInputRef} type="file" multiple hidden onChange={(e) => {
+                      const files = Array.from(e.target.files ?? [])
+                      setEditingBios((current) => {
+                        const base = current ? [...current] : []
+                        for (const f of files) base.push(f)
+                        return base
+                      })
+                    }} />
+                    <button onClick={() => biosInputRef.current?.click()}>Add BIOS</button>
+                    <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
+                      {(editingBios ?? []).map((b, i) => (
+                        <span key={`${b.name}-${i}`} style={{background: 'rgba(255,255,255,0.04)', padding: '6px 8px', borderRadius: 6}}>
+                          {b.name} <button onClick={() => setEditingBios((cur) => cur ? cur.filter((_, idx) => idx !== i) : null)}>x</button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px'}}>
+                  <button onClick={saveEdit}>Save</button>
+                  <button onClick={cancelEdit}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       )}
     </div>
