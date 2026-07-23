@@ -65,7 +65,10 @@ export default function DropZone({ onLoadRom }: DropZoneProps) {
               </option>
             ))}
           </select>
-          <button onClick={() => onLoadRom(pendingFile, core)}>Play</button>
+          <div style={{display: 'flex', gap: '12px', marginTop: '8px'}}>
+            <button style={{flex: '1 0 auto'}} onClick={() => onLoadRom(pendingFile, core)}>Play</button>
+            <button style={{flex: '0 0 auto'}} onClick={() => fileInputRef.current?.click()}>Add BIOS</button>
+          </div>
         </div>
       )}
     </div>

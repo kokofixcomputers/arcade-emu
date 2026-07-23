@@ -20,6 +20,8 @@ function formatDate(timestamp: number): string {
 export default function Library({ onPlay }: LibraryProps) {
   const [roms, setRoms] = useState<RomRecord[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [search, setSearch] = useState('')
+  const [filterSystem, setFilterSystem] = useState('all')
 
   const refresh = useCallback(() => {
     listRoms().then((records) => {
@@ -46,6 +48,12 @@ export default function Library({ onPlay }: LibraryProps) {
     setRoms((current) => current.filter((rom) => rom.id !== id))
   }
 
+  const filteredRoms = roms.filter(r => {
+    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase())
+    const matchesSystem = filterSystem === 'all' ? true : r.core === filterSystem
+    return matchesSearch && matchesSystem
+  })
+
   return (
     <div className="library">
       <section className="library__hero">
@@ -56,8 +64,25 @@ export default function Library({ onPlay }: LibraryProps) {
       {loaded && roms.length > 0 && (
         <section className="library__grid-section">
           <h2>Continue Playing</h2>
+
+          <div className="library__filters" style={{display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'center'}}>
+            <input
+              placeholder="Search by name"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{padding: '6px 8px', borderRadius: 6, border: '1px solid #2c2c32', background: '#1a1a1e', color: '#f4efe6'}}
+            />
+            <select value={filterSystem} onChange={(e) => setFilterSystem(e.target.value)} style={{padding: '6px 8px', borderRadius: 6, border: '1px solid #2c2c32', background: '#1a1a1e', color: '#f4efe6'}}>
+              <option value="all">All systems</option>
+              {Array.from(new Set(roms.map(r => r.core))).map((core) => (
+                <option key={core} value={core}>{systemLabel(core)}</option>
+              ))}
+            </select>
+            <button onClick={() => { setSearch(''); setFilterSystem('all') }} style={{marginLeft: 'auto'}}>Clear</button>
+          </div>
+
           <div className="library__grid">
-            {roms.map((record) => {
+            {filteredRoms.map((record) => {
               const badge = systemBadge(record.core)
               return (
                 <div

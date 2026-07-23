@@ -119,6 +119,18 @@
         color: var(--paper) !important;
         font-family: var(--font-body) !important;
       }
+      /* Restyle text inputs (cheats, key capture, etc.) to match dark theme */
+      .ejs_popup_container input[type='text'],
+      .ejs_popup_container input[type='number'],
+      .ejs_popup_container input[type='search'],
+      .ejs_popup_container input[type='tel'] {
+        background-color: var(--ink-card) !important;
+        border: 1.5px solid var(--line) !important;
+        color: var(--paper) !important;
+        -webkit-text-fill-color: var(--paper) !important;
+        border-radius: var(--r-sm) !important;
+        padding: 0.25rem 0.5rem !important;
+      }
       .ejs_popup_container h4 {
         font-family: var(--font-display) !important;
         font-size: 0.85rem !important;
