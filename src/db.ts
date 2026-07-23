@@ -6,6 +6,8 @@ export interface RomRecord {
   addedAt: number
   lastPlayedAt: number
   blob: Blob
+  /** Optional array of BIOS blobs associated with this ROM */
+  bios?: { name: string; blob: Blob }[]
   /** Absolute filesystem path, only set for ROMs auto-imported from a
    *  desktop (Tauri) ROMs folder — used to skip re-importing on rescan. */
   sourcePath?: string
@@ -43,7 +45,7 @@ async function withStore<T>(
   })
 }
 
-export async function addRom(file: File, core: string, sourcePath?: string): Promise<RomRecord> {
+export async function addRom(file: File, core: string, sourcePath?: string, bios?: File[] | null): Promise<RomRecord> {
   const record: RomRecord = {
     id: crypto.randomUUID(),
     name: file.name,
@@ -53,6 +55,7 @@ export async function addRom(file: File, core: string, sourcePath?: string): Pro
     lastPlayedAt: Date.now(),
     blob: file,
     sourcePath,
+    bios: bios ? bios.map((b) => ({ name: b.name, blob: b })) : undefined,
   }
   await withStore('readwrite', (store) => store.put(record))
   return record
@@ -79,6 +82,24 @@ export async function deleteRom(id: string): Promise<void> {
   await withStore('readwrite', (store) => store.delete(id))
 }
 
+export async function updateRomCore(id: string, core: string): Promise<void> {
+  const record = await withStore<RomRecord | undefined>('readonly', (store) => store.get(id))
+  if (!record) return
+  record.core = core
+  await withStore('readwrite', (store) => store.put(record))
+}
+
+export async function updateRomBios(id: string, bios?: File[] | null): Promise<void> {
+  const record = await withStore<RomRecord | undefined>('readonly', (store) => store.get(id))
+  if (!record) return
+  record.bios = bios ? bios.map((b) => ({ name: b.name, blob: b })) : undefined
+  await withStore('readwrite', (store) => store.put(record))
+}
+
 export function romToFile(record: RomRecord): File {
   return new File([record.blob], record.name, { type: record.blob.type })
+}
+
+export function romBiosToFiles(record: RomRecord): File[] {
+  return (record.bios ?? []).map((b) => new File([b.blob], b.name))
 }

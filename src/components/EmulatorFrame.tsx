@@ -32,9 +32,6 @@ export default function EmulatorFrame({ file, core, romId, couchMode, bios }: Em
       onLoad={handleLoad}
       allow="gamepad; fullscreen"
       className="emulator-frame"
-      /* When the iframe unloads (emulator exits), clear the active flag so
-         keyboard capture stops. */
-      onUnload={() => { try { (window as any).__arcadeEmuEmulatorActive = false } catch (e) {} }}
     />
   )
 }

@@ -248,6 +248,79 @@
   transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
+.rom-card__actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rom-card__action,
+.rom-card__delete {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(10,10,12,0.6);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  color: var(--paper);
+}
+
+.rom-card__action:hover,
+.rom-card__delete:hover {
+  border-color: var(--amber-dim);
+  color: var(--amber);
+  background: rgba(255,178,56,0.06);
+}
+
+.rom-card:hover .rom-card__actions {
+  opacity: 1;
+}
+
+.rom-card__actions {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.rom-card__edit {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(10,10,12,0.92);
+  border: 1px solid var(--line);
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 10;
+}
+
+.rom-card__edit select {
+  background: var(--ink-card);
+  color: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0.4rem;
+}
+
+.rom-card__edit button {
+  background: var(--amber);
+  color: var(--amber-ink);
+  border: 1.5px solid var(--amber);
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--r-sm);
+  font-weight: 700;
+}
+
+.rom-card__edit label {
+  color: var(--paper-dim);
+  font-size: 0.82rem;
+}
+
 .rom-card:hover .rom-card__delete {
   opacity: 1;
 }

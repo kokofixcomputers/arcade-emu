@@ -63,8 +63,7 @@ function App() {
         'Backspace','Delete','Home','End','Insert','Space','Enter','NumpadEnter',
         'KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','KeyP','KeyT','KeyN','KeyR','KeyF',
       ]
-      if (navigator.keyboard && typeof (navigator as any).keyboard.lock === 'function') {
-        // @ts-ignore
+      if ((navigator as any).keyboard && typeof (navigator as any).keyboard.lock === 'function') {
         ;(navigator as any).keyboard.lock(requested).catch(() => {})
       }
     } catch (e) {

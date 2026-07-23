@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
-import { X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { X, Settings } from 'lucide-react'
 import DropZone from './DropZone'
 import RomsFolderControl from './RomsFolderControl'
-import { deleteRom, listRoms, romToFile, type RomRecord } from '../db'
-import { systemBadge, systemLabel } from '../emulatorCores'
+import { deleteRom, listRoms, romToFile, updateRomCore, updateRomBios, romBiosToFiles, type RomRecord } from '../db'
+import { systemBadge, systemLabel, SYSTEMS } from '../emulatorCores'
 
 interface LibraryProps {
   onPlay: (file: File, core: string, romId: string, bios?: File[] | null) => void
@@ -38,14 +38,40 @@ export default function Library({ onPlay }: LibraryProps) {
     onPlay(file, core, '', bios ?? null)
   }
 
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingCore, setEditingCore] = useState<string | null>(null)
+  const [editingBios, setEditingBios] = useState<File[] | null>(null)
+  const biosInputRef = useRef<HTMLInputElement | null>(null)
+
   const handleResume = (record: RomRecord) => {
-    onPlay(romToFile(record), record.core, record.id)
+    onPlay(romToFile(record), record.core, record.id, romBiosToFiles(record))
   }
 
   const handleDelete = async (event: React.MouseEvent, id: string) => {
     event.stopPropagation()
     await deleteRom(id)
     setRoms((current) => current.filter((rom) => rom.id !== id))
+  }
+
+  const startEdit = (event: React.MouseEvent, record: RomRecord) => {
+    event.stopPropagation()
+    setEditingId(record.id)
+    setEditingCore(record.core)
+    setEditingBios(romBiosToFiles(record))
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditingCore(null)
+    setEditingBios(null)
+  }
+
+  const saveEdit = async () => {
+    if (!editingId || !editingCore) return
+    await updateRomCore(editingId, editingCore)
+    await updateRomBios(editingId, editingBios)
+    await refresh()
+    cancelEdit()
   }
 
   const filteredRoms = roms.filter(r => {
@@ -103,13 +129,61 @@ export default function Library({ onPlay }: LibraryProps) {
                     <p className="rom-card__meta">{systemLabel(record.core)}</p>
                     <p className="rom-card__meta">Last played {formatDate(record.lastPlayedAt)}</p>
                   </div>
-                  <button
-                    className="rom-card__delete"
-                    onClick={(event) => handleDelete(event, record.id)}
-                    aria-label={`Remove ${record.name}`}
-                  >
-                    <X size={14} />
-                  </button>
+
+                  <div className="rom-card__actions">
+                    <button className="rom-card__action" onClick={(e) => startEdit(e, record)} aria-label={`Edit ${record.name}`}>
+                      <Settings size={14} />
+                    </button>
+
+                    <button
+                      className="rom-card__delete"
+                      onClick={(event) => handleDelete(event, record.id)}
+                      aria-label={`Remove ${record.name}`}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  {editingId === record.id && (
+                    <div className="rom-card__edit" onClick={(e) => e.stopPropagation()}>
+                      <div style={{display: 'flex', gap: '8px'}}>
+                        <select value={editingCore ?? record.core} onChange={(e) => setEditingCore(e.target.value)}>
+                          {SYSTEMS.map((s) => (
+                            <option key={s.value} value={s.value}>{s.label}</option>
+                          ))}
+                        </select>
+
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                          <div>
+                            <label>BIOS files</label>
+                            <div style={{display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px'}}>
+                              <input ref={biosInputRef} type="file" multiple hidden onChange={(e) => {
+                                const files = Array.from(e.target.files ?? [])
+                                setEditingBios((current) => {
+                                  const base = current ? [...current] : []
+                                  for (const f of files) base.push(f)
+                                  return base
+                                })
+                              }} />
+                              <button onClick={() => biosInputRef.current?.click()}>Add BIOS</button>
+                              <div style={{display: 'flex', gap: '6px'}}>
+                                {(editingBios ?? []).map((b, i) => (
+                                  <span key={`${b.name}-${i}`} style={{background: 'rgba(255,255,255,0.04)', padding: '4px 6px', borderRadius: 6}}>
+                                    {b.name} <button onClick={() => setEditingBios((cur) => cur ? cur.filter((_, idx) => idx !== i) : null)}>x</button>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{display: 'flex', gap: '8px', marginTop: '8px'}}>
+                            <button onClick={saveEdit}>Save</button>
+                            <button onClick={cancelEdit}>Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
